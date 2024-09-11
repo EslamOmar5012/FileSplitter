@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text File Splitter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <h1>Text File Splitter</h1>
+    <input type="file" id="fileInput" accept=".txt">
+    <input type="number" id="linesPerChunk" placeholder="Lines per chunk" value="50">
+    <button onclick="splitFile()">Split and Download</button>
+
+    <script>
+        async function splitFile() {
+            const fileInput = document.getElementById('fileInput');
+            const linesPerChunk = parseInt(document.getElementById('linesPerChunk').value);
+
+            if (!fileInput.files.length) {
+                alert('Please select a file.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const text = await file.text();
+            const lines = text.split('\n');
+            const chunks = [];
+
+            for (let i = 0; i < lines.length; i += linesPerChunk) {
+                chunks.push(lines.slice(i, i + linesPerChunk).join('\n'));
+            }
+
+            const zip = new JSZip();
+            chunks.forEach((chunk, index) => {
+                zip.file(`chunk_${index + 1}.txt`, chunk);
+            });
+
+            const content = await zip.generateAsync({type: "blob"});
+            saveAs(content, "chunks.zip");
+        }
+    </script>
+</body>
+</html>
